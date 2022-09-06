@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+	"dev.z3nth10n.unitywebbrowser.engine.cef.win.x64": "2.0.0-preview.3-104.4.22"
+  },
+  "displayName": "Unity Web Browser Editor",
+  "description": "Editor version for Unity Web Browser",
+  "version": "1.0.0",
+  "unity": "2021.3",
+  "author": "z3nth10n",
+  "name": "dev.z3nth10n.unitywebbrowser.engine.cef.win.x64"
+}
