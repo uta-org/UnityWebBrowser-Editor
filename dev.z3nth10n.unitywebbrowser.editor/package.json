@@ -1,12 +1,12 @@
 {
   "dependencies": {
-	"dev.voltstro.nativearrayspanextensions": "https://github.com/Voltstro-Studios/NativeArraySpanExtensions.git",
-    "dev.voltstro.unitywebbrowser": "https://github.com/uta-org/UnityWebBrowser.git?path=src/Packages/UnityWebBrowser",
-    "dev.voltstro.unitywebbrowser.engine.cef": "https://github.com/uta-org/UnityWebBrowser.git?path=src/Packages/UnityWebBrowser.Engine.Cef",
-    "dev.z3nth10n.unitywebbrowser.engine.cef.win.x64": "https://github.com/uta-org/UnityWebBrowser-Win64.git",
+	"dev.voltstro.nativearrayspanextensions": "git+https://github.com/Voltstro-Studios/NativeArraySpanExtensions.git",
+    "dev.voltstro.unitywebbrowser": "git+https://github.com/uta-org/UnityWebBrowser.git?path=src/Packages/UnityWebBrowser",
+    "dev.voltstro.unitywebbrowser.engine.cef": "git+https://github.com/uta-org/UnityWebBrowser.git?path=src/Packages/UnityWebBrowser.Engine.Cef",
+    "dev.z3nth10n.unitywebbrowser.engine.cef.win.x64": "git+https://github.com/uta-org/UnityWebBrowser-Win64.git",
     "com.unity.editorcoroutines": "1.0.0",
     "com.unity.inputsystem": "1.4.2",
-	"dev.z3nth10n.unitywebbrowser.dependencies": "https://github.com/uta-org/UnityWebBrowser-Dependencies.git"
+	"dev.z3nth10n.unitywebbrowser.dependencies": "git+https://github.com/uta-org/UnityWebBrowser-Dependencies.git"
   },
   "displayName": "Unity Web Browser Editor",
   "description": "Editor version for Unity Web Browser",
