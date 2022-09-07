@@ -33,7 +33,3 @@ Also, you must add scopedRegistries to your manifest.json:
 		}
 	]
 ```
-
-If you miss the UnityNuget package you can download the binaries and import into you project from:
-
-https://github.com/uta-org/UnityWebBrowser-Editor/dependencies
