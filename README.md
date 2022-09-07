@@ -33,3 +33,5 @@ Also, you must add scopedRegistries to your manifest.json:
 		}
 	]
 ```
+
+"dev.z3nth10n.unitywebbrowser.editor": "file:../../Packages/dev.z3nth10n.unitywebbrowser.editor",
