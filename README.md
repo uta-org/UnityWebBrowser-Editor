@@ -2,7 +2,7 @@
 
 ## Instalation
 
-Add all this to your package.json before adding package.
+Add all this to your manifest.json inside Package folder (root project folder) before adding package.
 
 ```
 	"com.cysharp.unitask": "https://github.com/uta-org/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
