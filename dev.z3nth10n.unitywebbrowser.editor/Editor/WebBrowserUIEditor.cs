@@ -1,3 +1,5 @@
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEditor;
@@ -5,7 +7,6 @@ using VoltstroStudios.UnityWebBrowser.Communication;
 using Vector2 = UnityEngine.Vector2;
 using VoltstroStudios.UnityWebBrowser.Core;
 using VoltstroStudios.UnityWebBrowser.Core.Engines;
-using VoltstroStudios.UnityWebBrowser.Logging;
 using VoltstroStudios.UnityWebBrowser.Shared.Core;
 using VoltstroStudios.UnityWebBrowser.Shared.Events;
 using EventType = UnityEngine.EventType;
@@ -14,7 +15,6 @@ public class WebBrowserUIEditor : EditorWindow
 {
     private string url;
 
-    [Tooltip("The browser client, what handles the communication between the CEF process and Unity")]
     public WebBrowserClient browserClient;
 
     private bool isResizing;
@@ -31,6 +31,39 @@ public class WebBrowserUIEditor : EditorWindow
         window.Show();
     }
 
+    private static string GetEnginePath(Platform platform)
+    {
+        var ret = "Library/PackageCache/";
+        var folders = Directory.GetDirectories(ret);
+
+        var needle = "dev.z3nth10n.unitywebbrowser.engine.cef.";
+
+        switch (platform)
+        {
+            case Platform.Windows64:
+                needle += "win.x64";
+                break;
+
+            case Platform.Linux64:
+                needle += "linux.x64";
+                break;
+
+            case Platform.MacOS:
+                needle += "macos.x64";
+                break;
+        }
+
+        var folder = folders.FirstOrDefault(f => f.Contains(needle));
+
+        folder = Path.Combine(folder, "Engine~");
+        folder = folder.Replace("\\", "/");
+
+        if (!folder.EndsWith("/"))
+            folder += "/";
+
+        return folder;
+    }
+
     private void OnEnable()
     {
         if (browserClient != null)
@@ -41,18 +74,17 @@ public class WebBrowserUIEditor : EditorWindow
             //browserClient = null;
         }
 
-        browserClient = new WebBrowserClient()
+        browserClient = new WebBrowserClient
         {
-            engine = new EngineConfiguration()
+            engine = new EngineConfiguration
             {
                 engineAppName = "UnityWebBrowser.Engine.Cef",
                 engineFiles = new Engine.EnginePlatformFiles[]
                 {
-                    new Engine.EnginePlatformFiles()
+                    new Engine.EnginePlatformFiles
                     {
                         platform = Platform.Windows64,
-                        engineFileLocation = "Assets/Dependencies/.UnityWebBrowser.Engine.Cef.Win-x64/Engine/"
-                            // "Packages/dev.voltstro.unitywebbrowser.engine.cef.win.x64/Engine~/"
+                        engineFileLocation = GetEnginePath(Platform.Windows64)
                     },
                     //new Engine.EnginePlatformFiles()
                     //{
@@ -66,7 +98,7 @@ public class WebBrowserUIEditor : EditorWindow
                     //}
                 }
             },
-            communicationLayer = new TCPCommunicationLayer()
+            communicationLayer = new TCPCommunicationLayer
             {
                 connectionTimeout = 20000,
                 inPort = 60666,
@@ -83,8 +115,6 @@ public class WebBrowserUIEditor : EditorWindow
 
         var init = browserClient.GetType().GetMethod("Init", BindingFlags.NonPublic | BindingFlags.Instance);
         init.Invoke(browserClient, null);
-
-        //browserClient.Init();
     }
 
     private void OnDisable()
@@ -105,6 +135,8 @@ public class WebBrowserUIEditor : EditorWindow
             GUI.Label(new Rect(0, 0, position.width, 30), "Waiting for browser...");
             return;
         }
+
+        browserClient.LoadTextureData();
 
         //Debug.Log("Ready!");
 
