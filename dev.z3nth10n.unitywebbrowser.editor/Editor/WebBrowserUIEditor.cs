@@ -1,8 +1,12 @@
+using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.PackageManager.Requests;
+using UnityEditor.PackageManager;
 using VoltstroStudios.UnityWebBrowser.Communication;
 using Vector2 = UnityEngine.Vector2;
 using VoltstroStudios.UnityWebBrowser.Core;
@@ -19,6 +23,7 @@ public class WebBrowserUIEditor : EditorWindow
 
     private bool isResizing;
     private Vector2 lastWindowSize;
+    private static ListRequest packages;
 
     public Rect WindowRect => new Rect(new Vector2(0, 30), position.size - Vector2.up * 30f);
 
@@ -33,10 +38,7 @@ public class WebBrowserUIEditor : EditorWindow
 
     private static string GetEnginePath(Platform platform)
     {
-        var ret = "Library/PackageCache/";
-        var folders = Directory.GetDirectories(ret);
-
-        var needle = "dev.z3nth10n.unitywebbrowser.engine.cef.";
+        var needle = "unitywebbrowser.engine.cef.";
 
         switch (platform)
         {
@@ -53,7 +55,11 @@ public class WebBrowserUIEditor : EditorWindow
                 break;
         }
 
-        var folder = folders.FirstOrDefault(f => f.Contains(needle));
+        //Debug.Log(string.Join(Environment.NewLine, packages.Result.Select(i => $"{i.packageId}, {i.assetPath}, {i.resolvedPath}")));
+
+        var info = packages.Result.FirstOrDefault(p => p.packageId.Contains(needle));
+        var folder = info.resolvedPath;
+            // folders.FirstOrDefault(f => f.Contains(needle));
 
         folder = Path.Combine(folder, "Engine~");
         folder = folder.Replace("\\", "/");
@@ -74,41 +80,48 @@ public class WebBrowserUIEditor : EditorWindow
             //browserClient = null;
         }
 
-        browserClient = new WebBrowserClient
+        packages = Client.List(false);
+    }
+
+    private void InitBrowser()
+    {
+        browserClient = (WebBrowserClient)Activator.CreateInstance(typeof(WebBrowserClient), BindingFlags.NonPublic | BindingFlags.Instance, null, null, CultureInfo.InvariantCulture);
+
+        var engineConfig = CreateInstance<EngineConfiguration>();
+
+        engineConfig.engineAppName = "UnityWebBrowser.Engine.Cef";
+        engineConfig.engineFiles = new Engine.EnginePlatformFiles[]
         {
-            engine = new EngineConfiguration
+            new Engine.EnginePlatformFiles
             {
-                engineAppName = "UnityWebBrowser.Engine.Cef",
-                engineFiles = new Engine.EnginePlatformFiles[]
-                {
-                    new Engine.EnginePlatformFiles
-                    {
-                        platform = Platform.Windows64,
-                        engineFileLocation = GetEnginePath(Platform.Windows64)
-                    },
-                    //new Engine.EnginePlatformFiles()
-                    //{
-                    //    platform = Platform.Linux64,
-                    //    engineFileLocation = "Packages/dev.voltstro.unitywebbrowser.engine.cef.linux.x64/Engine~/"
-                    //},
-                    //new Engine.EnginePlatformFiles()
-                    //{
-                    //    platform = Platform.MacOS,
-                    //    engineFileLocation = "Packages/dev.voltstro.unitywebbrowser.engine.cef.macos.x64/Engine~/"
-                    //}
-                }
+                platform = Platform.Windows64,
+                engineFileLocation = GetEnginePath(Platform.Windows64)
             },
-            communicationLayer = new TCPCommunicationLayer
-            {
-                connectionTimeout = 20000,
-                inPort = 60666,
-                outPort = 60663
-            },
-            //backgroundColor = new Color32(255, 0, 0, 255)
+            //new Engine.EnginePlatformFiles()
+            //{
+            //    platform = Platform.Linux64,
+            //    engineFileLocation = "Packages/dev.voltstro.unitywebbrowser.engine.cef.linux.x64/Engine~/"
+            //},
+            //new Engine.EnginePlatformFiles()
+            //{
+            //    platform = Platform.MacOS,
+            //    engineFileLocation = "Packages/dev.voltstro.unitywebbrowser.engine.cef.macos.x64/Engine~/"
+            //}
         };
+        browserClient.engine = engineConfig;
+
+        var communicationConfig = CreateInstance<TCPCommunicationLayer>();
+
+        communicationConfig.connectionTimeout = 20000;
+        communicationConfig.inPort = 60666;
+        communicationConfig.outPort = 60663;
+
+        browserClient.communicationLayer = communicationConfig;
+        //backgroundColor = new Color32(255, 0, 0, 255)
+
         browserClient.initialUrl =
-        //"http://localhost:4200/";
-         "https://material.angularjs.org/latest/demo/button";
+            //"http://localhost:4200/";
+            "https://material.angularjs.org/latest/demo/button";
         //"https://google.com";
         //browserClient.width = (uint)position.size.x;
         //browserClient.height = (uint)position.size.y;
@@ -125,12 +138,17 @@ public class WebBrowserUIEditor : EditorWindow
 
     private void OnInspectorUpdate()
     {
+        if (packages != null && packages.IsCompleted && browserClient == null)
+        {
+            InitBrowser();
+        }
+
         Repaint();
     }
 
     private void OnGUI()
     {
-        if (!browserClient.ReadySignalReceived)
+        if (browserClient == null || !browserClient.ReadySignalReceived)
         {
             GUI.Label(new Rect(0, 0, position.width, 30), "Waiting for browser...");
             return;
